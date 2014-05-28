@@ -7,8 +7,8 @@ import cPickle as pickle
 import stdlib as stlib
 from shapely import wkt
 from osgeo import ogr, osr
-
-from integration_framework.stdlib import Variable, Unit
+import imp
+from stdlib import Variable, Unit
 
 class multidict(dict):
     _unique = 0
@@ -29,6 +29,8 @@ class ini_types():
     simulation_end = '%m/%d/%Y %H:%M:%S'
     elementset = 'str'
     epsg_code = 'int'
+    filepath = 'str'
+    classname = 'str'
 
 def validate_config_ini(ini_path):
 
@@ -79,6 +81,23 @@ def validate_config_ini(ini_path):
                 if option == 'unit_type_cv':
                     if val not in unit:
                         raise Exception (val+' is not a valid controlled vocabulary term')
+
+
+        if section.split('^')[0] == 'software':
+            # check that software filepath is valid
+            path = cparser.get(section,'filepath')
+            if not os.path.isfile(path):
+                raise Exception(path+' is not a valid file')
+
+            #todo: check that software class name exists
+            try:
+                classname = cparser.get(section,'classname')
+                filename = os.path.basename(path)
+                module = imp.load_source(filename, os.path.realpath(path))
+                m = getattr(module, classname)
+            except:
+                raise Exception(classname+' is not a valid class name')
+
 
     return 1
 
@@ -190,17 +209,17 @@ def get_srs_from_epsg(code):
 
 
 
-def build_exchange_items(ini):
+def build_exchange_items(config_params):
 
     exchange_items = []
     oei = []
     iei = []
 
-    items = parse_config(ini)
+    #items = parse_config(ini)
 
 
     # get all inputs and outputs
-    eitems = items['output'] + items['input']
+    eitems = config_params['output'] + config_params['input']
 
     # loop through each input/output and create an exchange item
     for io in eitems:
@@ -264,3 +283,24 @@ def build_exchange_items(ini):
         exchange_items.append(ei)
 
     return exchange_items
+
+
+def load_model(config_params):
+    """
+    Creates an instance of the model by loading the contents of the configuration ini file.
+    returns (model name,model instance)
+    """
+    # parse module config
+    #items = parse_config(ini)
+
+    # get source attributes
+    software = config_params['software']
+
+    classname = software[0]['classname']
+    filepath = os.path.realpath(software[0]['filepath'])
+
+    # load the model
+    model = imp.load_source(os.path.basename(filepath), filepath)
+    model_class = getattr(model, classname)
+
+    return (config_params['general'][0]['name'], model_class())

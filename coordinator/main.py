@@ -1,13 +1,14 @@
 __author__ = 'tonycastronova'
 
 import sys, getopt
-from integration_framework.coordinator import help as h
+from coordinator import help as h
+from utilities import *
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
 """
 
-class link(object):
+class Link(object):
     """
     stores info about the linkage between two components
     """
@@ -22,19 +23,34 @@ class link(object):
         id = None
 
 
-class coordinator(object):
+class Coordinator(object):
     def __init__(self):
         """
         globals
         """
+        __models = {}
         pass
 
 
-    def add_model(self, linkablecomponent):
+    def add_model(self, ini_path):
         """
         stores model component objects when added to a configuration
         """
+
+        # parse the model configuration parameters
+        params = parse_config(ini_path)
+
+        # load model
+        name,model = load_model(params)
+
+        # save the model
+        self.__models[name] = model
+
+
+    def build_exchange_item(self, ini_path):
+
         pass
+
 
     def remove_model(self,linkablecomponent):
         """
@@ -93,6 +109,9 @@ def main(argv):
 
     arg = None
     while arg != 'exit':
+        # create instance of coordinator
+        coordinator = Coordinator()
+
         # get the users command
         arg = raw_input("> ").split(' ')
 
@@ -100,6 +119,7 @@ def main(argv):
             if arg[0] == 'help':
                 if len(arg) == 1: print h.help()
                 else: print h.help_function(arg[1])
+            elif arg[0] == 'add' : coordinator.add_model(arg[1])
             elif arg[0] == 'info': print h.info()
             else:
                 print '> [error] command not recognized.  Type "help" for a complete list of commands.'
