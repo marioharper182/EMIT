@@ -16,15 +16,29 @@ def help_function(function):
     elif function == 'open':
         pass
     elif function =='add':
-        pass
+        return  "> Usage:\t Adds models to a configuration.\n" \
+                ">       \t add [model filepath]\n" \
+                ">       \t [model filepath] is the path to the model configuration file"
+
     elif function =='remove':
-        pass
+        return  "> Usage:\t Removes models from a configuration.\n" \
+                ">       \t remove [model name]\n" \
+                ">       \t [model name] is the name of the model that will be removed"
     elif function == 'link':
         pass
     elif function == 'display':
         pass
     elif function == 'run':
         pass
+    elif function =='showme':
+        return  "> Usage:\t Displays configuration info.\n" \
+                ">       \t showme [models] [links] [inputs] [outputs] [summary]\n" \
+                ">       \t [models] keyword returns a summary of models in the configuration.\n"\
+                ">       \t [links] keyword returns a summary of all the links in the configuration.\n" \
+                ">       \t [inputs] keyword returns a summary of all inputs in the configuration.\n"\
+                ">       \t [outputs] keyword returns a summary of all outputs in the configuration.\n" \
+                ">       \t [summary] keyword returns a general summary of the entire configuration."
+
     else:
         return '> [error] function "%s" not recognized. ' % function
 
@@ -52,5 +66,5 @@ def help():
             '  add     - adds a model to the configuration \n' + \
             '  remove  - removes a model from the configuration \n'+\
             '  link    - creates link between two models \n' +\
-            '  display - displays the configuration \n' +\
+            '  showme  - show info about the model configuration \n' +\
             '  run     - executes the simulation \n'

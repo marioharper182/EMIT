@@ -141,10 +141,22 @@ def main(argv):
             if arg[0] == 'help':
                 if len(arg) == 1: print h.help()
                 else: print h.help_function(arg[1])
+
             elif arg[0] == 'add' :
                 if len(arg) == 1: print h.help_function('add')
                 else: coordinator.add_model(arg[1])
+
+            elif arg[0] == 'remove':
+                if len(arg) == 1: print h.help_function('remove')
+                else: coordinator.remove_model(arg[1])
+
+            elif arg[0] == 'showme':
+                if len(arg) == 1: print h.help_function('showme')
+                else: coordinator.get_configuration_details(arg[1])
+
+
             elif arg[0] == 'info': print h.info()
+
             else:
                 print '> [error] command not recognized.  Type "help" for a complete list of commands.'
 
