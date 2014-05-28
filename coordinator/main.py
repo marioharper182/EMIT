@@ -28,7 +28,7 @@ class Coordinator(object):
         """
         globals
         """
-        __models = {}
+        self.__models = {}
         pass
 
 
@@ -40,22 +40,31 @@ class Coordinator(object):
         # parse the model configuration parameters
         params = parse_config(ini_path)
 
-        # load model
-        name,model = load_model(params)
+        if params is not None:
+            # load model
+            name,model = load_model(params)
 
-        # save the model
-        self.__models[name] = model
-
-
-    def build_exchange_item(self, ini_path):
-
-        pass
+            # save the model
+            if name not in self.__models:
+                self.__models[name] = model
+            else:
+                print 'Model named '+name+' already exists in configuration'
 
 
     def remove_model(self,linkablecomponent):
         """
         removes model component objects from the registry
         """
+
+        if linkablecomponent in self.__models:
+            # remove the model
+            self.__models.pop(linkablecomponent,None)
+
+            #todo: remove all associated links
+
+
+    def build_exchange_item(self, ini_path):
+
         pass
 
     def add_link(self,from_lc, to_lc):
@@ -98,6 +107,19 @@ class Coordinator(object):
         """
         pass
 
+    def get_configuration_details(self):
+
+        # loop through all known models
+        for name,model in self.__models.iteritems():
+
+            # print model name
+            print '  Model: '+name
+            print '  '+20*'-'
+
+            # print exchange items
+
+            # print links
+
 
 
 def main(argv):
@@ -119,7 +141,9 @@ def main(argv):
             if arg[0] == 'help':
                 if len(arg) == 1: print h.help()
                 else: print h.help_function(arg[1])
-            elif arg[0] == 'add' : coordinator.add_model(arg[1])
+            elif arg[0] == 'add' :
+                if len(arg) == 1: print h.help_function('add')
+                else: coordinator.add_model(arg[1])
             elif arg[0] == 'info': print h.info()
             else:
                 print '> [error] command not recognized.  Type "help" for a complete list of commands.'

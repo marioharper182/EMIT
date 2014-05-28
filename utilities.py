@@ -34,69 +34,80 @@ class ini_types():
 
 def validate_config_ini(ini_path):
 
-    cparser = ConfigParser.ConfigParser(None, multidict)
+    try:
 
-     # parse the ini
-    cparser.read(ini_path)
+        cparser = ConfigParser.ConfigParser(None, multidict)
 
-    # get the ini sections from the parser
-    parsed_sections = cparser.sections()
+         # parse the ini
+        cparser.read(ini_path)
 
-    # load lookup tables
-    var = pickle.load(open('../data/var_cv.dat','rb'))
-    unit = pickle.load(open('../data/units_cv.dat','rb'))
+        # get the ini sections from the parser
+        parsed_sections = cparser.sections()
 
-    # validate
-    for section in parsed_sections:
-        # get ini options
-        options = cparser.options(section)
+        # if no sections are found, than the file format must be incorrect
+        if len(parsed_sections) == 0: raise Exception('Invalid model configuration file')
 
-        # validate units and variables parameters
-        if section.split('_')[0] == 'output' or section.split('_')[0] == 'input':
-            # check that variable and unit exist
-            if 'variable_name_cv' not in options or 'unit_type_cv' not in options:
-                raise Exception ('Inputs and Outputs must contain "variable_name_cv" and "unit_type_cv" parameters ')
+        # load lookup tables
+        var = pickle.load(open('../data/var_cv.dat','rb'))
+        unit = pickle.load(open('../data/units_cv.dat','rb'))
 
-        # check each option individually
-        for option in options:
-            val = cparser.get(section,option)
+        # validate
+        for section in parsed_sections:
+            # get ini options
+            options = cparser.options(section)
 
-            # validate date format
-            if option == 'simulation_start' or option == 'simulation_end':
+            # validate units and variables parameters
+            if section.split('_')[0] == 'output' or section.split('_')[0] == 'input':
+                # check that variable and unit exist
+                if 'variable_name_cv' not in options or 'unit_type_cv' not in options:
+                    raise Exception ('Inputs and Outputs must contain "variable_name_cv" and "unit_type_cv" parameters ')
+
+            # check each option individually
+            for option in options:
+                val = cparser.get(section,option)
+
+                # validate date format
+                if option == 'simulation_start' or option == 'simulation_end':
+                    try:
+                        datetime.datetime.strptime(val, getattr(ini_types, option))
+                    except ValueError:
+                        raise ValueError("Incorrect data format, should be "+getattr(ini_types, option))
+                else:
+                    # validate data type
+                    if not isinstance(val,type(getattr(ini_types, option))):
+                        raise Exception(option+' is not of type '+getattr(ini_types, option))
+
+                    # check variable cv (i.e. lookup table)
+                    if option == 'variable_name_cv':
+                        if val not in var:
+                            raise Exception (val+' is not a valid controlled vocabulary term')
+
+                    # check unit type cv (i.e. lookup table)
+                    if option == 'unit_type_cv':
+                        if val not in unit:
+                            raise Exception (val+' is not a valid controlled vocabulary term')
+
+
+            if section.split('^')[0] == 'software':
+                # check that software filepath is valid
+                relpath = cparser.get(section,'filepath')
+                basedir = os.path.realpath(os.path.dirname(ini_path))
+                abspath = os.path.abspath(os.path.join(basedir,relpath))
+                if not os.path.isfile(abspath):
+                    raise Exception(abspath+' is not a valid file')
+
+                #todo: check that software class name exists
                 try:
-                    datetime.datetime.strptime(val, getattr(ini_types, option))
-                except ValueError:
-                    raise ValueError("Incorrect data format, should be "+getattr(ini_types, option))
-            else:
-                # validate data type
-                if not isinstance(val,type(getattr(ini_types, option))):
-                    raise Exception(option+' is not of type '+getattr(ini_types, option))
+                    classname = cparser.get(section,'classname')
+                    filename = os.path.basename(abspath)
+                    module = imp.load_source(filename, abspath)
+                    m = getattr(module, classname)
+                except:
+                    print 'Configuration Parsing Error: '+classname+' is not a valid class name'
 
-                # check variable cv (i.e. lookup table)
-                if option == 'variable_name_cv':
-                    if val not in var:
-                        raise Exception (val+' is not a valid controlled vocabulary term')
-
-                # check unit type cv (i.e. lookup table)
-                if option == 'unit_type_cv':
-                    if val not in unit:
-                        raise Exception (val+' is not a valid controlled vocabulary term')
-
-
-        if section.split('^')[0] == 'software':
-            # check that software filepath is valid
-            path = cparser.get(section,'filepath')
-            if not os.path.isfile(path):
-                raise Exception(path+' is not a valid file')
-
-            #todo: check that software class name exists
-            try:
-                classname = cparser.get(section,'classname')
-                filename = os.path.basename(path)
-                module = imp.load_source(filename, os.path.realpath(path))
-                m = getattr(module, classname)
-            except:
-                raise Exception(classname+' is not a valid class name')
+    except Exception, e:
+        print '> [Configuration Parsing Error] '+str(e)
+        return 0
 
 
     return 1
@@ -136,34 +147,39 @@ def parse_config(ini):
     """
 
     isvalid = validate_config_ini(ini)
-    if not isvalid:
-        raise Exception('Configuration file is not valid!')
+    if isvalid:
+        #raise Exception('Configuration file is not valid!')
 
-    config_params = {}
-    cparser = ConfigParser.ConfigParser(None, multidict)
-    cparser.read(ini)
-    sections = cparser.sections()
+        config_params = {}
+        cparser = ConfigParser.ConfigParser(None, multidict)
+        cparser.read(ini)
+        sections = cparser.sections()
 
-    for s in sections:
-        # get the section key (minus the random number)
-        section = s.split('^')[0]
+        for s in sections:
+            # get the section key (minus the random number)
+            section = s.split('^')[0]
 
-        # get the section options
-        options = cparser.options(s)
+            # get the section options
+            options = cparser.options(s)
 
-        # save ini options as dictionary
-        d = {}
-        for option in options:
-            d[option] = cparser.get(s,option)
-        d['type'] = section
+            # save ini options as dictionary
+            d = {}
+            for option in options:
+                d[option] = cparser.get(s,option)
+            d['type'] = section
 
 
-        if section not in config_params:
-            config_params[section] = [d]
-        else:
-            config_params[section].append(d)
+            if section not in config_params:
+                config_params[section] = [d]
+            else:
+                config_params[section].append(d)
 
-    return config_params
+        # save the base path of the model
+        config_params['basedir'] = basedir = os.path.realpath(os.path.dirname(ini))
+
+        return config_params
+    else:
+        return None
 
 def read_shapefile(shp):
     """
@@ -295,12 +311,17 @@ def load_model(config_params):
 
     # get source attributes
     software = config_params['software']
-
     classname = software[0]['classname']
-    filepath = os.path.realpath(software[0]['filepath'])
+    relpath = software[0]['filepath']
 
     # load the model
-    model = imp.load_source(os.path.basename(filepath), filepath)
-    model_class = getattr(model, classname)
+    basedir = config_params['basedir']
+    abspath = os.path.abspath(os.path.join(basedir,relpath))
+    filename = os.path.basename(abspath)
+    module = imp.load_source(filename, abspath)
+    model_class = getattr(module, classname)
+
+
+    # todo: Initialize model?
 
     return (config_params['general'][0]['name'], model_class())
