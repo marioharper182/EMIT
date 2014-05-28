@@ -107,16 +107,28 @@ class Coordinator(object):
         """
         pass
 
-    def get_configuration_details(self):
+    def get_configuration_details(self,arg):
 
-        # loop through all known models
-        for name,model in self.__models.iteritems():
+        if len(self.__models.keys()) == 0:
+            print '> Could not complete request. No models found in configuration.'
+            return
 
-            # print model name
-            print '  Model: '+name
-            print '  '+20*'-'
+        # print model info
+        if arg.strip() == 'models' or arg.strip() == 'summary':
 
-            # print exchange items
+            # loop through all known models
+            for name,model in self.__models.iteritems():
+
+                # print model name
+                print '  '+(27+len(name))*'-'
+                print '  |' + ((33-len(name))/2)*' ' +'Model: '+name + ((33-len(name))/2)*' '+'|'
+                print '  '+(27+len(name))*'-'
+
+                # print exchange items
+
+        # print link info
+        if arg.strip() == 'links' or arg.strip() == 'summary':
+            pass
 
             # print links
 
@@ -130,9 +142,11 @@ def main(argv):
     print '\nPlease enter a command or type "help" for a list of commands'
 
     arg = None
+
+    # create instance of coordinator
+    coordinator = Coordinator()
+
     while arg != 'exit':
-        # create instance of coordinator
-        coordinator = Coordinator()
 
         # get the users command
         arg = raw_input("> ").split(' ')
