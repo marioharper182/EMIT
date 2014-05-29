@@ -31,6 +31,7 @@ class ini_types():
     epsg_code = 'int'
     filepath = 'str'
     classname = 'str'
+    ignorecv = 'str'
 
 def validate_config_ini(ini_path):
 
@@ -51,16 +52,26 @@ def validate_config_ini(ini_path):
         var = pickle.load(open('../data/var_cv.dat','rb'))
         unit = pickle.load(open('../data/units_cv.dat','rb'))
 
+        # check to see if 'ignorecv' option has been provided
+        ignorecv = False
+        for p in parsed_sections:
+            if p.split('^')[0] == 'options':
+                if cparser.has_option(p,'ignorecv'):
+                    ignorecv = int(cparser.get(p,'ignorecv'))
+                    break
+
+
         # validate
         for section in parsed_sections:
             # get ini options
             options = cparser.options(section)
 
-            # validate units and variables parameters
-            if section.split('_')[0] == 'output' or section.split('_')[0] == 'input':
-                # check that variable and unit exist
-                if 'variable_name_cv' not in options or 'unit_type_cv' not in options:
-                    raise Exception ('Inputs and Outputs must contain "variable_name_cv" and "unit_type_cv" parameters ')
+            if not ignorecv:
+                # validate units and variables parameters
+                if section.split('_')[0] == 'output' or section.split('_')[0] == 'input':
+                    # check that variable and unit exist
+                    if 'variable_name_cv' not in options or 'unit_type_cv' not in options:
+                        raise Exception ('Inputs and Outputs must contain "variable_name_cv" and "unit_type_cv" parameters ')
 
             # check each option individually
             for option in options:
@@ -77,15 +88,16 @@ def validate_config_ini(ini_path):
                     if not isinstance(val,type(getattr(ini_types, option))):
                         raise Exception(option+' is not of type '+getattr(ini_types, option))
 
-                    # check variable cv (i.e. lookup table)
-                    if option == 'variable_name_cv':
-                        if val not in var:
-                            raise Exception (val+' is not a valid controlled vocabulary term')
+                    if not ignorecv:
+                        # check variable cv (i.e. lookup table)
+                        if option == 'variable_name_cv':
+                            if val not in var:
+                                raise Exception (val+' is not a valid controlled vocabulary term')
 
-                    # check unit type cv (i.e. lookup table)
-                    if option == 'unit_type_cv':
-                        if val not in unit:
-                            raise Exception (val+' is not a valid controlled vocabulary term')
+                        # check unit type cv (i.e. lookup table)
+                        if option == 'unit_type_cv':
+                            if val not in unit:
+                                raise Exception (val+' is not a valid controlled vocabulary term')
 
 
             if section.split('^')[0] == 'software':
@@ -124,7 +136,11 @@ def create_variable(variable_name_cv):
         V.VariableDefinition(value=var[variable_name_cv].strip())
         return V
     else:
-        return None
+        V = Variable()
+        V.VariableNameCV(value=variable_name_cv)
+        V.VariableDefinition(value='unknown')
+        print '>  [WARNING] Variable not found in controlled vocabulary : '+variable_name_cv
+        return V
 
 def create_unit(unit_name):
     """
@@ -139,7 +155,12 @@ def create_unit(unit_name):
         U.UnitAbbreviation(value=var[unit_name][1].strip())
         return U
     else:
-        return None
+        U = Unit()
+        U.UnitName(value=unit_name)
+        U.UnitTypeCV(value='unknown')
+        U.UnitAbbreviation(value='unknown')
+        print '>  [WARNING] Unit not found in controlled vocabularu : '+unit_name
+        return U
 
 def parse_config(ini):
     """
@@ -232,7 +253,9 @@ def build_exchange_items(config_params):
 
 
     # get all inputs and outputs
-    eitems = config_params['output'] + config_params['input']
+    #inputs = config_params['input'] if 'input' in config_params else []
+    #outputs = config_params['output'] if 'output' in config_params else []
+    eitems = config_params['input'] if 'input' in config_params else [] + config_params['output'] if 'output' in config_params else []
 
     # loop through each input/output and create an exchange item
     for io in eitems:
