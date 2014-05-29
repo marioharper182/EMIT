@@ -207,7 +207,6 @@ def read_shapefile(shp):
 
     return geoms, spatialRef
 
-
 def get_srs_from_epsg(code):
     """
     returns a spatial projection. code is an integer EPSG code, e.g. 2000
@@ -222,8 +221,6 @@ def get_srs_from_epsg(code):
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(int(code))
     return srs
-
-
 
 def build_exchange_items(config_params):
 
@@ -299,7 +296,6 @@ def build_exchange_items(config_params):
         exchange_items.append(ei)
 
     return exchange_items
-
 
 def load_model(config_params):
     """

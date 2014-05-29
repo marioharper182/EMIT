@@ -22,6 +22,32 @@ class Link(object):
 
         id = None
 
+class Model(object):
+    """
+    defines a model that has been loaded into a configuration
+    """
+    def __init__(self, name, instance, desc=None, input_exchange_items={}, output_exchange_items={}):
+        self.__name = name
+        self.__description = desc
+        self.__iei = {}
+        self.__oei = {}
+
+        for iei in input_exchange_items:
+            self.__iei[iei.name()] = iei
+
+        for oei in output_exchange_items:
+            self.__oei[oei.name()] = oei
+
+        self.__inst = instance
+
+    def get_input_exhange_items(self):
+        return [j for i,j in self.__iei.items()]
+    def get_output_exhange_items(self):
+        return [j for i,j in self.__oei.items()]
+    def get_description(self):
+        return self.__description
+    def get_name(self):
+        return self.__name
 
 class Coordinator(object):
     def __init__(self):
@@ -42,13 +68,31 @@ class Coordinator(object):
 
         if params is not None:
             # load model
-            name,model = load_model(params)
+            name,model_inst = load_model(params)
+
+            # make sure this model doesnt already exist
+            if name in self.__models:
+                print 'Model named '+name+' already exists in configuration'
+                return None
+
+            # build exchange items
+            ei = build_exchange_items(params)
+
+            # organize input and output items
+            iei = [item for item in ei if item.get_type() == 'input']
+            oei = [item for item in ei if item.get_type() == 'output']
+
+            # create a model instance
+            thisModel = Model(name,
+                              model_inst,
+                              params['general'][0]['description'],
+                              iei,
+                              oei)
 
             # save the model
-            if name not in self.__models:
-                self.__models[name] = model
-            else:
-                print 'Model named '+name+' already exists in configuration'
+            self.__models[name] = thisModel
+
+
 
 
     def remove_model(self,linkablecomponent):
@@ -119,12 +163,26 @@ class Coordinator(object):
             # loop through all known models
             for name,model in self.__models.iteritems():
 
-                # print model name
+
+
+                # print exchange items
                 print '  '+(27+len(name))*'-'
                 print '  |' + ((33-len(name))/2)*' ' +'Model: '+name + ((33-len(name))/2)*' '+'|'
                 print '  '+(27+len(name))*'-'
 
-                # print exchange items
+                print '   * ' + model.get_description()
+                print '  '+(27+len(name))*'-'
+
+                for item in model.get_input_exhange_items() + model.get_output_exhange_items():
+                    print '   '+item.get_type().upper()
+                    print '   * name: '+item.name()
+                    print '   * description: '+item.description()
+                    print '   * unit: '+item.unit().UnitName()
+                    print '   * variable: '+item.variable().VariableNameCV()
+                    print '  '+(27+len(name))*'-'
+                print ''
+
+
 
         # print link info
         if arg.strip() == 'links' or arg.strip() == 'summary':

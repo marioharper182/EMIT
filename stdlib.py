@@ -189,6 +189,9 @@ class ExchangeItem(object):
         self.StartTime = datetime.datetime(2999,1,1,1,0,0)
         self.EndTime = datetime.datetime(1900,1,1,1,0,0)
 
+    def get_type(self):
+        return self.__type
+
     def name(self,value=None):
         if value is None:
             return self.__name
@@ -252,7 +255,6 @@ class ExchangeItem(object):
         else:
             self.__variable = value
 
-
     def add_dataset(self,datavalues):
         """
         datavalues = list of datavalue objects
@@ -264,7 +266,6 @@ class ExchangeItem(object):
         else:
             self.get_dataset().append(datavalues)
             self.__calculate_start_and_end_times([datavalues])
-
 
     def clear_dataset(self):
         self.__dataset = []
