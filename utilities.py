@@ -313,9 +313,10 @@ def build_exchange_items(config_params):
 
         # increment item id
         itemid += 1
+        id = iotype.upper()+str(itemid)
 
         # create exchange item
-        ei = stlib.ExchangeItem(itemid, variable.VariableNameCV(),variable.VariableDefinition(),unit,variable,iotype)
+        ei = stlib.ExchangeItem(id, variable.VariableNameCV(),variable.VariableDefinition(),unit,variable,iotype)
 
         # add to exchange item
         for ds in datasets:

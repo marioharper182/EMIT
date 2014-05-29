@@ -25,7 +25,12 @@ def help_function(function):
                 ">       \t remove [model name]\n" \
                 ">       \t [model name] is the name of the model that will be removed"
     elif function == 'link':
-        pass
+        return  "> Usage:\t Adds a link between models in a configuration.\n" \
+                ">       \t link [from model name] [from exchange item] [to model name] [to exchange item]\n" \
+                ">       \t [from model name] is the name of the model that will transfer output\n"\
+                ">       \t [from exchange item] is the output item that will transfer data \n"\
+                ">       \t [to model name] is the name of the model that will accept input\n"\
+                ">       \t [to exchange item] is the name of the input item that will receive data"
     elif function == 'display':
         pass
     elif function == 'run':

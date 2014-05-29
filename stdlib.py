@@ -189,7 +189,7 @@ class ExchangeItem(object):
         self.StartTime = datetime.datetime(2999,1,1,1,0,0)
         self.EndTime = datetime.datetime(1900,1,1,1,0,0)
 
-        self.__id = None
+        self.__id = id
 
     def get_id(self):
         return self.__id
