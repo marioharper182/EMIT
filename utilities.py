@@ -159,7 +159,7 @@ def create_unit(unit_name):
         U.UnitName(value=unit_name)
         U.UnitTypeCV(value='unknown')
         U.UnitAbbreviation(value='unknown')
-        print '>  [WARNING] Unit not found in controlled vocabularu : '+unit_name
+        print '>  [WARNING] Unit not found in controlled vocabulary : '+unit_name
         return U
 
 def parse_config(ini):
@@ -257,6 +257,8 @@ def build_exchange_items(config_params):
     #outputs = config_params['output'] if 'output' in config_params else []
     eitems = config_params['input'] if 'input' in config_params else [] + config_params['output'] if 'output' in config_params else []
 
+    itemid = 0
+
     # loop through each input/output and create an exchange item
     for io in eitems:
         variable = None
@@ -309,8 +311,11 @@ def build_exchange_items(config_params):
                     datasets.append(ds)
 
 
+        # increment item id
+        itemid += 1
+
         # create exchange item
-        ei = stlib.ExchangeItem(variable.VariableNameCV(),variable.VariableDefinition(),unit,variable,iotype)
+        ei = stlib.ExchangeItem(itemid, variable.VariableNameCV(),variable.VariableDefinition(),unit,variable,iotype)
 
         # add to exchange item
         for ds in datasets:

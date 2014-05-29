@@ -172,7 +172,7 @@ class DataValues(object):
         return self.__end
 
 class ExchangeItem(object):
-    def __init__(self,name=None,desc=None,unit=None,variable=None,type=ExchangeItemType.Input,dataset=[]):
+    def __init__(self,id,name=None,desc=None,unit=None,variable=None,type=ExchangeItemType.Input,dataset=[]):
         self.__name = name
         self.__description = desc
 
@@ -188,6 +188,11 @@ class ExchangeItem(object):
 
         self.StartTime = datetime.datetime(2999,1,1,1,0,0)
         self.EndTime = datetime.datetime(1900,1,1,1,0,0)
+
+        self.__id = None
+
+    def get_id(self):
+        return self.__id
 
     def get_type(self):
         return self.__type
