@@ -1,9 +1,9 @@
 __author__ = 'tonycastronova'
 
-import random
+#import random
 
 class randomizer(object):
     def __init__(self):
-        self.__rand = random.random()
-
+        #self.__rand = random.random()
+        pass
 

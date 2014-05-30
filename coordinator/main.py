@@ -147,6 +147,27 @@ class Coordinator(object):
 
             #todo: remove all associated links
 
+    def remove_model_by_id(self,id):
+        for m in self.__models:
+            if self.__models[m].get_id() == id:
+
+                # remove the model
+                self.__models.pop(m,None)
+
+                # find all links associated with the model
+                remove_these_links  = []
+                for l in self.__links:
+                    FROM, TO = self.__links[l].get_link()
+                    if FROM[0].get_id() == id or TO[0].get_id() == id:
+                        remove_these_links.append(l)
+
+                # remove all links associated with the model
+                for link in remove_these_links:
+                    self.__links.pop(link,None)
+
+                return 1
+        return 0
+
     def get_model_by_id(self,id):
         for m in self.__models:
             if self.__models[m].get_id() == id:
@@ -170,10 +191,6 @@ class Coordinator(object):
             return None
 
 
-        if from_id not in self.__links:
-            self.__links[from_id] = []
-
-
         # check that input and output exchange items exist
         ii = To.get_input_exchange_item(to_item_name)
         oi = From.get_output_exchange_item(from_item_name)
@@ -184,10 +201,8 @@ class Coordinator(object):
 
             # create link
             link = Link(id,From,To,oi,ii)
-            self.__links[from_id].append(link)
-            #self.__links[from_id].append({'to':to_id,
-            #                                'from_ei':oi,
-            #                                'to_ei':ii})
+            self.__links[id] = link
+
             return id
         else:
             print '>  Could Not Create Link :('
@@ -198,10 +213,29 @@ class Coordinator(object):
         """
         pass
 
-    def remove_link(self,id):
+    def get_link_by_id(self,id):
+        """
+        returns all the links corresponding with a linkable component
+        """
+        for l in self.__links:
+            if l == id:
+                return self.__links[l]
+        return None
+
+    def remove_link_by_id(self,id):
         """
         removes a link using the link id
         """
+        if id in self.__links:
+            self.__links.pop(id,None)
+            return 1
+        return 0
+
+        # for l in self.__links:
+        #     if self.__links[l].get_id() == id:
+        #         self.__links.pop(l,None)
+        #         return 1
+        # return 0
 
     def calculate_execution_order(self):
         """
@@ -297,7 +331,7 @@ def main(argv):
 
             elif arg[0] == 'remove':
                 if len(arg) == 1: print h.help_function('remove')
-                else: coordinator.remove_model(arg[1])
+                else: coordinator.remove_model_by_id(arg[1])
 
             elif arg[0] == 'link':
                 if len(arg) != 5: print h.help_function('link')
