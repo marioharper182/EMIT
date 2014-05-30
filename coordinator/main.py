@@ -12,7 +12,7 @@ class Link(object):
     """
     stores info about the linkage between two components
     """
-    def __init__(self, from_linkable_component, to_linkable_component, from_item, to_item):
+    def __init__(self, id, from_linkable_component, to_linkable_component, from_item, to_item):
         # TODO: this is not finished, just mocked up
         self.__from_lc = from_linkable_component
         self.__from_item = from_item
@@ -20,8 +20,13 @@ class Link(object):
         self.__to_lc = to_linkable_component
         self.__to_item = to_item
 
+        self.__id = id
+
     def get_link(self):
         return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
+
+    def get_id(self):
+        return self.__id
 
 class Model(object):
     """
@@ -128,6 +133,9 @@ class Coordinator(object):
             # save the model
             self.__models[name] = thisModel
 
+            # return the model id
+            return id
+
     def remove_model(self,linkablecomponent):
         """
         removes model component objects from the registry
@@ -144,7 +152,6 @@ class Coordinator(object):
             if self.__models[m].get_id() == id:
                 return self.__models[m]
         return None
-
 
     def add_link(self,from_id, from_item_name, to_id, to_item_name):
         """
@@ -166,15 +173,22 @@ class Coordinator(object):
         if from_id not in self.__links:
             self.__links[from_id] = []
 
+
         # check that input and output exchange items exist
         ii = To.get_input_exchange_item(to_item_name)
         oi = From.get_output_exchange_item(from_item_name)
 
         if ii is not None and oi is not None:
+            # generate a unique model id
+            id = self.get_new_id()
+
             # create link
-            self.__links[from_id].append({'to':to_id,
-                                            'from_ei':oi,
-                                            'to_ei':ii})
+            link = Link(id,From,To,oi,ii)
+            self.__links[from_id].append(link)
+            #self.__links[from_id].append({'to':to_id,
+            #                                'from_ei':oi,
+            #                                'to_ei':ii})
+
         else:
             print '>  Could Not Create Link :('
 
