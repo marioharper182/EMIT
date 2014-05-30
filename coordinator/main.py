@@ -121,10 +121,10 @@ class Coordinator(object):
             oei = [item for item in ei if item.get_type() == 'output']
 
             # generate a unique model id
-            id = self.get_new_id()
+            id = 'M'+str(self.get_new_id())
 
             # create a model instance
-            thisModel = Model('M'+str(id),name,
+            thisModel = Model(id,name,
                               model_inst,
                               params['general'][0]['description'],
                               iei,
@@ -180,7 +180,7 @@ class Coordinator(object):
 
         if ii is not None and oi is not None:
             # generate a unique model id
-            id = self.get_new_id()
+            id = 'L'+str(self.get_new_id())
 
             # create link
             link = Link(id,From,To,oi,ii)
@@ -188,7 +188,7 @@ class Coordinator(object):
             #self.__links[from_id].append({'to':to_id,
             #                                'from_ei':oi,
             #                                'to_ei':ii})
-
+            return id
         else:
             print '>  Could Not Create Link :('
 
