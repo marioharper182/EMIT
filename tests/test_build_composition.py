@@ -136,3 +136,21 @@ class test_build_composition(unittest.TestCase):
         # make sure that the link was removed too
         self.assertFalse(self.sim.get_link_by_id(linkid))
 
+    def test_get_links_by_model(self):
+        # add models
+        mdl1 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl'
+        id1 = self.sim.add_model(mdl1)
+        mdl2 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/random.mdl'
+        id2 = self.sim.add_model(mdl2)
+
+        # test that now links are returned
+        self.assertFalse(self.sim.get_links_by_model(id1))
+
+        # create link
+        linkid = self.sim.add_link(id2,'OUTPUT1',id1,'INPUT1')
+
+        links = self.sim.get_links_by_model(id1)
+        # test that links are returned
+        self.assertTrue(len(links) == 1)
+
+

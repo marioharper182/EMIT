@@ -3,6 +3,7 @@ __author__ = 'tonycastronova'
 import sys, getopt
 from coordinator import help as h
 from utilities import *
+import math
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -277,53 +278,119 @@ class Coordinator(object):
             print '>  Could not complete request. No models found in configuration.'
             return
 
+        if arg.strip() == 'summary':
+            print '\n   Here is everything I know about the current simulation...\n'
+
         # print model info
         if arg.strip() == 'models' or arg.strip() == 'summary':
 
             # loop through all known models
             for name,model in self.__models.iteritems():
-
-
+                model_output = []
+                model_output.append('Model: '+name)
+                model_output.append('desc: ' + model.get_description())
+                model_output.append('id: '+ model.get_id())
 
                 # print exchange items
-                print '  '+(27+len(name))*'-'
-                print '  |' + ((33-len(name))/2)*' ' +'Model: '+name + ((33-len(name))/2)*' '+'|'
-                print '  '+(27+len(name))*'-'
+                #print '  '+(27+len(name))*'-'
+                #print '  |' + ((33-len(name))/2)*' ' +'Model: '+name + ((33-len(name))/2)*' '+'|'
+                #print '  '+(27+len(name))*'-'
 
-                print '   * desc: ' + model.get_description()
-                print '   * id : '+ model.get_id()
-                print '  '+(27+len(name))*'-'
+                #print '   * desc: ' + model.get_description()
+                #print '   * id : '+ model.get_id()
+                #print '  '+(27+len(name))*'-'
 
                 for item in model.get_input_exchange_items() + model.get_output_exchange_items():
-                    print '   '+item.get_type().upper()
-                    print '   * id: '+str(item.get_id())
-                    print '   * name: '+item.name()
-                    print '   * description: '+item.description()
-                    print '   * unit: '+item.unit().UnitName()
-                    print '   * variable: '+item.variable().VariableNameCV()
-                    print '  '+(27+len(name))*'-'
-                print ''
+                    # print '   '+item.get_type().upper()
+                    # print '   * id: '+str(item.get_id())
+                    # print '   * name: '+item.name()
+                    # print '   * description: '+item.description()
+                    # print '   * unit: '+item.unit().UnitName()
+                    # print '   * variable: '+item.variable().VariableNameCV()
+                    # print '  '+(27+len(name))*'-'
+                    model_output.append( str(item.get_id()))
+                    model_output.append( 'name: '+item.name())
+                    model_output.append( 'description: '+item.description())
+                    model_output.append( 'unit: '+item.unit().UnitName())
+                    model_output.append( 'variable: '+item.variable().VariableNameCV())
+                    model_output.append( ' ')
 
+                # get formatted width
+                w = self.get_format_width(model_output)
 
+                # print model info
+                print '  |'+(w)*'-'+'|'
+                print '  *'+self.format_text(model_output[0], w,'center')+'*'
+                print '  |'+(w)*'='+'|'
+                print '  |'+self.format_text(model_output[1], w,'left')+'|'
+                print '  |'+self.format_text(model_output[2], w,'left')+'|'
+                print '  |'+(w)*'-'+'|'
+                for l in model_output[3:]: print '  |'+self.format_text(l,w,'left')+'|'
+                print '  |'+(w)*'-'+'|'
+                print ' '
 
         # print link info
         if arg.strip() == 'links' or arg.strip() == 'summary':
-            if len(self.__links) > 0:
-                print '  '+(27+len(name))*'-'
-                print '  LINKS'
-                print '  '+(27+len(name))*'-'
+            # string to store link output
+            link_output = []
+            # longest line in link_output
+            maxlen = 0
 
-            for l in self.__links:
-                From, To = l.get_link()
-                print '  * id: '+l.get_id()
-                print '  * from: '+From[0].name()+' - '+From[1].name()
-                print '  * to: '+To[0].name()+' - '+To[1].name()
-                print '  '+(27+len(name))*'-'
+            for linkid,link in self.__links.iteritems():
+                # get the link info
+                From, To = link.get_link()
 
+                link_output.append('LINK ID : ' + linkid)
+                link_output.append('from: '+From[0].get_name()+' -- output --> '+From[1].name())
+                link_output.append('to: '+To[0].get_name()+' -- input --> '+To[1].name())
+
+                # get the formatted width
+                w = self.get_format_width(link_output)
+
+                # pad the width and make sure that it is divisible by 2
+                #w += 4 if w % 2 == 0 else 5
+
+                # print the output
+                print '  |'+(w)*'-'+'|'
+                print '  *'+self.format_text(link_output[0], w,'center')+'*'
+                print '  |'+(w)*'='+'|'
+                for l in link_output[1:]: print '  |'+self.format_text(l,w,'left')+'|'
+                print '  |'+(w)*'-'+'|'
 
             pass
 
             # print links
+
+    def get_format_width(self,output_array):
+        width = 0
+        for line in output_array:
+            if len(line) > width: width = len(line)
+        return width + 4
+
+    def format_text(self,text,width,option='right'):
+
+        if option == 'center':
+            # determine the useable padding
+            padding = width - len(text)
+            lpadding = padding/2
+            rpadding = padding - lpadding
+
+            # center the text
+            return lpadding*' '+text+rpadding*' '
+
+        elif option == 'left':
+            # determine the useable padding
+            padding = width - len(text)
+
+            # center the text
+            return text+padding*' '
+
+        elif option == 'right':
+            # determine the useable padding
+            padding = width - len(text)
+
+            # center the text
+            return padding*' ' + text
 
 
 
