@@ -207,11 +207,22 @@ class Coordinator(object):
         else:
             print '>  Could Not Create Link :('
 
-    def get_links(self,lc):
+    def get_links_by_model(self,model_id):
         """
         returns all the links corresponding with a linkable component
         """
-        pass
+        links = []
+        for linkid, link in self.__links.iteritems():
+            # get the from/to link info
+            From, To = link.get_link()
+
+            if  From[0].get_id() == model_id or To[0].get_id() == model_id:
+                links.append([From, To])
+
+        if len(links) == 0:
+            print '>  Could not find any links associated with model id: '+str(model_id)
+
+        return links
 
     def get_link_by_id(self,id):
         """
@@ -263,7 +274,7 @@ class Coordinator(object):
     def get_configuration_details(self,arg):
 
         if len(self.__models.keys()) == 0:
-            print '> Could not complete request. No models found in configuration.'
+            print '>  Could not complete request. No models found in configuration.'
             return
 
         # print model info
@@ -297,6 +308,19 @@ class Coordinator(object):
 
         # print link info
         if arg.strip() == 'links' or arg.strip() == 'summary':
+            if len(self.__links) > 0:
+                print '  '+(27+len(name))*'-'
+                print '  LINKS'
+                print '  '+(27+len(name))*'-'
+
+            for l in self.__links:
+                From, To = l.get_link()
+                print '  * id: '+l.get_id()
+                print '  * from: '+From[0].name()+' - '+From[1].name()
+                print '  * to: '+To[0].name()+' - '+To[1].name()
+                print '  '+(27+len(name))*'-'
+
+
             pass
 
             # print links
