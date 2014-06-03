@@ -261,8 +261,8 @@ class Coordinator(object):
         g = net.DiGraph()
 
         # add models as graph nodes
-        for name,model in self.__models.iteritems():
-            g.add_node(model.get_id())
+        #for name,model in self.__models.iteritems():
+        #    g.add_node(model.get_id())
 
         # create links between these nodes
         for id, link in self.__links.iteritems():
@@ -271,8 +271,26 @@ class Coordinator(object):
             to_node = t[0].get_id()
             g.add_edge(from_node, to_node)
 
+        # determine cycles
+        cycles = net.recursive_simple_cycles(g)
+        for cycle in cycles:
+            # remove edges that form cycles
+            g.remove_edge(cycle[0],cycle[1])
+
+        # perform toposort
+        order = net.topological_sort(g)
+
+        # re-add bidirectional dependencies (i.e. cycles)
+        for cycle in cycles:
+            # find index of inverse link
+            for i in xrange(0,len(order)-1):
+                if order[i] == cycle[1] and order[i+1] == cycle[0]:
+                    order.insert(i+2, cycle[1])
+                    order.insert(i+3,cycle[0])
+                    break
+
         # return execution order
-        return net.topological_sort(g)
+        return order
 
     def transfer_data(self, link):
         """
@@ -291,7 +309,10 @@ class Coordinator(object):
         coordinates the simulation effort
         """
 
+        # determine unresolved exchange items (utilities)
+
         # determine execution order
+
 
         # foreach model in order
         #   get input data
@@ -462,6 +483,7 @@ def main(argv):
                 else: coordinator.get_configuration_details(arg[1])
 
 
+            #todo: show database time series that are available
 
             elif arg[0] == 'info': print h.info()
 

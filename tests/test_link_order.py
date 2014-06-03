@@ -9,12 +9,6 @@ class test_link_order(unittest.TestCase):
     def setUp(self):
 
         self.g = n.DiGraph()
-        # add some nodes to simulate models
-        self.g.add_node('m1')
-        self.g.add_node('m2')
-        self.g.add_node('m3')
-        self.g.add_node('m4')
-        self.g.add_node('m5')
 
     def tearDown(self):
         del self.g
@@ -101,3 +95,39 @@ class test_link_order(unittest.TestCase):
         self.assertTrue(order.index('m6') < order.index('m5'))
         self.assertTrue(order.index('m5') < order.index('m4'))
         self.assertTrue(order.index('m3') == 5)
+
+    def test_bidirectional(self):
+        """
+         m1 <-> m2 -> m3
+
+        """
+
+
+        self.g.add_edge('m1','m2')
+        self.g.add_edge('m2','m3')
+        self.g.add_edge('m3','m2')
+        self.g.add_edge('m3','m4')
+
+        # remove any models that done have links
+        #for
+
+        # determine cycles
+        cycles = n.recursive_simple_cycles(self.g)
+        for cycle in cycles:
+            # remove edges that form cycles
+            self.g.remove_edge(cycle[0],cycle[1])
+
+        # perform toposort
+        order = n.topological_sort(self.g)
+
+        # re-add bidirectional dependencies (i.e. cycles)
+        for cycle in cycles:
+            # find index of inverse link
+            for i in xrange(0,len(order)-1):
+                if order[i] == cycle[1] and order[i+1] == cycle[0]:
+                    order.insert(i+2, cycle[1])
+                    order.insert(i+3,cycle[0])
+                    break
+
+        self.assertTrue(''.join(order) == 'm1m2m3m2m3m4')
+

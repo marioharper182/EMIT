@@ -350,3 +350,12 @@ def load_model(config_params):
     # todo: Initialize model?
 
     return (config_params['general'][0]['name'], model_class())
+
+
+#
+
+
+def unresolved_exchange_items():
+    # make sure that all input items are satisfied
+    # warn the user if output items are not being used or saved in database
+    pass
