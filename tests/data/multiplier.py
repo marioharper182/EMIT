@@ -30,18 +30,36 @@ class multiplier(object):
 
         """
 
-    def run(self,exchangeitem):
+    def run(self,exchangeitems):
         """
         This is an abstract method that must be implemented.
-        input_ts => exchangeitem class object (see stdlib)
+        :param exchangeitems: list of input exchange items
+        :return: true
         """
 
-        # get the geometries of the exchange item
-        geoms = exchangeitem.get_geoms()
+        # build exchange item dict
+        edict = {}
+        for item in exchangeitems:
+            # get unit and variable
+            unit = item.unit().UnitName()
+            var = item.variable.VariableNameCV()
+
+            if var not in edict: edict[var] = {unit:item}
+            else: edict[var][unit] = item
+
+
+        # get the geometries of the first exchange item
+        geoms = exchangeitems[0].get_geoms()
 
         # loop through geometry and perform calculation
+        # todo: some sort of automatic geometry mapping (utilites.py)
         for geometry in geoms:
-            # todo: some sort of automatic geometry mapping (utilites.py)
+            ts = exchangeitems[0].get_timeseries_by_element()
+
+
+
+
+
 
 
 

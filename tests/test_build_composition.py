@@ -154,3 +154,20 @@ class test_build_composition(unittest.TestCase):
         self.assertTrue(len(links) == 1)
 
 
+    # def test_run(self):
+    #     # add models
+    #     mdl1 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/multiplier.mdl'
+    #     id1 = self.sim.add_model(mdl1)
+    #     mdl2 = '/Users/tonycastronova/Documents/projects/iUtah/EMIT/tests/data/random.mdl'
+    #     id2 = self.sim.add_model(mdl2)
+    #
+    #     # create link
+    #     linkid = self.sim.add_link(id2,'OUTPUT1',id1,'INPUT1')
+    #
+    #     # get data required for simulation
+    #
+    #
+    #     links = self.sim.get_links_by_model(id1)
+    #     # test that links are returned
+    #     self.assertTrue(len(links) == 1)
+

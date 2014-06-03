@@ -4,6 +4,7 @@ import sys, getopt
 from coordinator import help as h
 from utilities import *
 import math
+import networkx as net
 
 """
 Purpose: This file contains the logic used to run coupled model simulations
@@ -249,10 +250,29 @@ class Coordinator(object):
         #         return 1
         # return 0
 
-    def calculate_execution_order(self):
+    def determine_execution_order(self):
         """
-        determines the order in which models will be executed
+        determines the order in which models will be executed.
+         def get_link(self):
+        return [self.__from_lc,self.__from_item], [self.__to_lc,self.__to_item]
+
         """
+
+        g = net.DiGraph()
+
+        # add models as graph nodes
+        for name,model in self.__models.iteritems():
+            g.add_node(model.get_id())
+
+        # create links between these nodes
+        for id, link in self.__links.iteritems():
+            f, t = link.get_link()
+            from_node = f[0].get_id()
+            to_node = t[0].get_id()
+            g.add_edge(from_node, to_node)
+
+        # return execution order
+        return net.topological_sort(g)
 
     def transfer_data(self, link):
         """
@@ -270,6 +290,15 @@ class Coordinator(object):
         """
         coordinates the simulation effort
         """
+
+        # determine execution order
+
+        # foreach model in order
+        #   get input data
+        #   set input data
+        #   call model.run
+        #   save output (model.save)
+
         pass
 
     def get_configuration_details(self,arg):
