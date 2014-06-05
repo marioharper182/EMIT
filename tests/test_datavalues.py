@@ -2,9 +2,9 @@ __author__ = 'tonycastronova'
 
 
 import unittest
-from integration_framework.stdlib import *
+from stdlib import *
 import datetime
-import integration_framework.utilities as utils
+import utilities as utils
 
 class testDataValues(unittest.TestCase):
 

@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import unittest
 
-from integration_framework import utilities
+import utilities
 
 class testUnit(unittest.TestCase):
 
@@ -17,4 +17,4 @@ class testUnit(unittest.TestCase):
 
         name = 'NotInCV'
         unit = utilities.create_unit(name)
-        self.assertTrue(unit is None)
+        self.assertTrue(unit.UnitTypeCV() == 'unknown')

@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import unittest
 
-from integration_framework.stdlib import ElementType,Element
+from stdlib import ElementType,Element
 
 
 class testVariable(unittest.TestCase):

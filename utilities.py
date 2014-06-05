@@ -352,10 +352,22 @@ def load_model(config_params):
     return (config_params['general'][0]['name'], model_class())
 
 
-#
+
 
 
 def unresolved_exchange_items():
     # make sure that all input items are satisfied
     # warn the user if output items are not being used or saved in database
+    pass
+
+
+# TODO: Move into wrapper?
+def get_data_by_exchange_item(exchangeitemlist, variableName, unitName):
+    """
+    returns the exchange item associated with a given variable and unit
+    :param exchangeitemlist: list of exchange items
+    :param variableName: desired variable
+    :param unitName: desired unit
+    :return: exchange item associated with variable and unit
+    """
     pass

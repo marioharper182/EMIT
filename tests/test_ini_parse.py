@@ -3,7 +3,7 @@ __author__ = 'tonycastronova'
 import ConfigParser
 import os, sys
 import unittest
-from integration_framework import utilities
+import utilities
 
 
 class test_ini_parse(unittest.TestCase):

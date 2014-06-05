@@ -1,8 +1,7 @@
 __author__ = 'tonycastronova'
 
 import unittest
-
-from integration_framework import utilities
+import utilities
 
 
 
@@ -18,4 +17,4 @@ class testVariable(unittest.TestCase):
 
         name = 'NotInCV'
         variable = utilities.create_variable(name)
-        self.assertTrue(variable is None)
+        self.assertTrue(variable.VariableDefinition() == 'unknown')

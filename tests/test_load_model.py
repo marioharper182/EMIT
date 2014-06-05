@@ -11,8 +11,8 @@ class testExchangeItem(unittest.TestCase):
     def test_load_model(self):
 
         config = os.path.realpath('./configuration.ini')
-
-        m = utils.load_model(config)
+        params = utils.parse_config(config)
+        m = utils.load_model(params)
 
         #todo: make sure that this class is an instance of TestModel
 

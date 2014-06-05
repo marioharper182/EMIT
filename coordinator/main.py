@@ -312,12 +312,19 @@ class Coordinator(object):
         # determine unresolved exchange items (utilities)
 
         # determine execution order
+        exec_order = self.determine_execution_order()
+
+        for modelid in exec_order:
+            # get the current model instance
+            model = self.get_model_by_id(modelid)
 
 
-        # foreach model in order
-        #   get input data
-        #   set input data
-        #   call model.run
+            #  retrieve inputs from database
+
+            #  set these input data as exchange items in stdlib or wrapper class
+
+            #  call model.run
+            
         #   save output (model.save)
 
         pass
