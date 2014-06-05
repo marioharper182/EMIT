@@ -1,0 +1,3 @@
+[submodule "odm2"]
+	path = odm2
+	url = https://github.com/UCHIC/ODM2
