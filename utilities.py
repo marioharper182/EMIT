@@ -352,6 +352,47 @@ def load_model(config_params):
     return (config_params['general'][0]['name'], model_class())
 
 
+def create_database_connections_from_file(ini):
+
+    # database connections dictionary
+    db_connections = {}
+
+    # parse the dataabase connections file
+    params = {}
+    cparser = ConfigParser.ConfigParser(None, multidict)
+    cparser.read(ini)
+    sections = cparser.sections()
+
+    # create a session for each database connection in the ini file
+    for s in sections:
+        # get the section key (minus the random number)
+        #section = s.split('^')[0]
+
+        # put ini args into a dictionary
+        options = cparser.options(s)
+        d = {}
+        for option in options:
+            d[option] = cparser.get(s,option)
+
+        # build database connection
+        from odm2.api.ODMconnection import dbconnection, SessionFactory
+        connection_string = dbconnection.create_connection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
+
+        # add connection string to dictionary (for backup/debugging)
+        d['connection_string'] = connection_string
+
+        # create a session
+        try:
+            session = SessionFactory(connection_string,None).get_session()
+        except:
+            session = None
+            print 'Could not establish a connection with the database: '+connection_string
+
+        # save this session in the db_connections object
+        db_connections[d['name']] = {'session': session,
+                                     'description':d['desc'],
+                                     'args': d}
+    return db_connections
 
 
 

@@ -93,6 +93,7 @@ class Coordinator(object):
         self.__models = {}
         self.__links = {}
         self.__incr = 0
+        self._db = {}
 
     def get_new_id(self):
         self.__incr += 1
@@ -324,7 +325,7 @@ class Coordinator(object):
             #  set these input data as exchange items in stdlib or wrapper class
 
             #  call model.run
-            
+
         #   save output (model.save)
 
         pass
@@ -332,8 +333,7 @@ class Coordinator(object):
     def get_configuration_details(self,arg):
 
         if len(self.__models.keys()) == 0:
-            print '>  Could not complete request. No models found in configuration.'
-            return
+            print '>  [warning] no models found in configuration.'
 
         if arg.strip() == 'summary':
             print '\n   Here is everything I know about the current simulation...\n'
@@ -414,9 +414,69 @@ class Coordinator(object):
                 for l in link_output[1:]: print '  |'+self.format_text(l,w,'left')+'|'
                 print '  |'+(w)*'-'+'|'
 
-            pass
+        # print database info
+        if arg.strip() == 'db' or arg.strip() == 'summary':
+            
+            for name,db_dict in self._db.iteritems():
 
-            # print links
+                # string to store db output
+                db_output = []
+                # longest line in db_output
+                maxlen = 0
+
+                # get the session args
+                desc = db_dict['description']
+                engine = db_dict['args']['engine']
+                address = db_dict['args']['address']
+                user = db_dict['args']['user']
+                pwd = db_dict['args']['pwd']
+                db = db_dict['args']['db']
+
+
+                db_output.append('DATABASE : ' + name)
+                db_output.append('engine: '+engine)
+                db_output.append('address: '+address)
+                db_output.append('database: '+db)
+                db_output.append('user: '+user)
+                db_output.append('connection string: '+db_dict['args']['connection_string'])
+
+                # get the formatted width
+                w = self.get_format_width(db_output)
+
+                # print the output
+                print '  |'+(w)*'-'+'|'
+                print '  *'+self.format_text(db_output[0], w,'center')+'*'
+                print '  |'+(w)*'='+'|'
+                for l in db_output[1:]: print '  |'+self.format_text(l,w,'left')+'|'
+                print '  |'+(w)*'-'+'|'
+
+
+
+    def get_db_connections(self):
+        return self._db
+
+    def connect_to_db(self,in_args):
+
+        # remove any empty list objects
+        args = [in_arg for in_arg in in_args if in_arg != '']
+
+        # parse from file
+        if len(args) == 1:
+            basedir = args[0]
+            abspath = os.path.abspath(os.path.join(basedir,args[0]))
+            filename = os.path.basename(abspath)
+            if os.path.isfile(abspath):
+                try:
+                    connections = create_database_connections_from_file(args[0])
+                    self._db = connections
+                    return True
+                except Exception,e:
+                    print e
+                    print '> [error] Could not create connections from file '+args[0]
+                    return None
+
+        else:
+            pass
 
     def get_format_width(self,output_array):
         width = 0
@@ -489,6 +549,9 @@ def main(argv):
                 if len(arg) == 1: print h.help_function('showme')
                 else: coordinator.get_configuration_details(arg[1])
 
+            elif arg[0] == 'connect_db':
+                if len(arg) == 1: print h.help_function('connect_db')
+                else: coordinator.connect_to_db(arg[1:])
 
             #todo: show database time series that are available
 
