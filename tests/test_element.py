@@ -2,7 +2,7 @@ __author__ = 'tonycastronova'
 
 import unittest
 
-from stdlib import ElementType,Element
+from stdlib import ElementType,Geometry
 
 
 class testVariable(unittest.TestCase):
@@ -12,25 +12,21 @@ class testVariable(unittest.TestCase):
 
         wkt_geometry = 'POINT (1.0 20.1)'
 
-        elem = Element()
-        self.assertTrue(elem.geom() == None)
+        g = Geometry()
+        self.assertTrue(g.geom() == None)
+        self.assertTrue(g.srs() == None)
+        self.assertTrue(g.elev() == None)
+        self.assertTrue(g.type() == None)
 
-        name,code = elem.srs()
-        self.assertTrue(name == None)
-        self.assertTrue(code == None)
-        self.assertTrue(elem.elev() == None)
-        self.assertTrue(elem.type() == None)
+        g.srs('EPSG:2921')
+        g.set_geom_from_wkt(wkt_geometry)
+        g.type(ElementType.Point)
 
-        elem.srs('NAD83(HARN) / Utah North (ft)','EPSG:2921')
-        elem.set_geom_from_wkt(wkt_geometry)
-        elem.type(ElementType.Point)
-
-        name,code = elem.srs()
-        self.assertTrue(code == 'EPSG:2921')
-        self.assertTrue(elem.geom().geometryType() == 'Point')
-        self.assertTrue(len(elem.geom().coords) == 1)
-        self.assertTrue(elem.geom().coords[0][0] == 1.0)
-        self.assertTrue(elem.geom().coords[0][1] == 20.1)
+        self.assertTrue(g.srs() == 'EPSG:2921')
+        self.assertTrue(g.geom().geometryType() == 'Point')
+        self.assertTrue(len(g.geom().coords) == 1)
+        self.assertTrue(g.geom().coords[0][0] == 1.0)
+        self.assertTrue(g.geom().coords[0][1] == 20.1)
 
 
 
