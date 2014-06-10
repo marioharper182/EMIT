@@ -9,6 +9,7 @@ from shapely import wkt
 from osgeo import ogr, osr
 import imp
 from stdlib import Variable, Unit
+from odm2.api.ODMconnection import dbconnection, SessionFactory
 
 class multidict(dict):
     _unique = 0
@@ -243,19 +244,14 @@ def get_srs_from_epsg(code):
     srs.ImportFromEPSG(int(code))
     return srs
 
-def build_exchange_items(config_params):
+def build_exchange_items(params):
 
     exchange_items = []
     oei = []
     iei = []
 
-    #items = parse_config(ini)
-
-
     # get all inputs and outputs
-    #inputs = config_params['input'] if 'input' in config_params else []
-    #outputs = config_params['output'] if 'output' in config_params else []
-    eitems = config_params['input'] if 'input' in config_params else [] + config_params['output'] if 'output' in config_params else []
+    eitems = params['input'] if 'input' in params else [] + params['output'] if 'output' in params else []
 
     itemid = 0
 
@@ -263,8 +259,8 @@ def build_exchange_items(config_params):
     for io in eitems:
         variable = None
         unit = None
-        datasets = []
-        #type = None
+        elementset = []
+
         iotype = stlib.ExchangeItemType.Output if io['type'].lower() == 'output' else stlib.ExchangeItemType.Input
 
         #if 'output' in io.keys(): type = stlib.ExchangeItemType.Output
@@ -299,16 +295,16 @@ def build_exchange_items(config_params):
 
 
                 for element in geom:
+                    # define initial dataset for element
+                    dv = stlib.DataValues()
+
                     # create element
-                    elem = stlib.Element()
+                    elem = stlib.Geometry()
                     elem.geom(element)
                     elem.type(element.geom_type)
                     elem.srs(srs)
-
-                    # define initial dataset for element
-                    ds = stlib.DataValues(elem)
-
-                    datasets.append(ds)
+                    elem.datavalues(dv)
+                    elementset.append(elem)
 
 
         # increment item id
@@ -316,11 +312,17 @@ def build_exchange_items(config_params):
         id = iotype.upper()+str(itemid)
 
         # create exchange item
-        ei = stlib.ExchangeItem(id, variable.VariableNameCV(),variable.VariableDefinition(),unit,variable,iotype)
+        ei = stlib.ExchangeItem(id,
+                                name=variable.VariableNameCV(),
+                                desc=variable.VariableDefinition(),
+                                geometry=elementset,
+                                unit= unit,
+                                variable=variable,
+                                type=iotype)
 
         # add to exchange item
-        for ds in datasets:
-            ei.add_dataset(ds)
+        #for ds in datasets:
+        #    ei.add_geometry(ds)
 
         exchange_items.append(ei)
 
@@ -346,10 +348,10 @@ def load_model(config_params):
     module = imp.load_source(filename, abspath)
     model_class = getattr(module, classname)
 
-
     # todo: Initialize model?
+    instance = model_class(config_params)
 
-    return (config_params['general'][0]['name'], model_class())
+    return (config_params['general'][0]['name'], instance)
 
 
 def create_database_connections_from_file(ini):
@@ -375,7 +377,6 @@ def create_database_connections_from_file(ini):
             d[option] = cparser.get(s,option)
 
         # build database connection
-        from odm2.api.ODMconnection import dbconnection, SessionFactory
         connection_string = dbconnection.create_connection(d['engine'],d['address'],d['db'],d['user'],d['pwd'])
 
         # add connection string to dictionary (for backup/debugging)
@@ -395,10 +396,45 @@ def create_database_connections_from_file(ini):
     return db_connections
 
 
+def get_ts_from_link(session, links, target_model):
+    """
+    queries the data
+    :param session: database session where the data is stored
+    :param links: all links
+    :param target_model:
+    :return:
+    """
+
+    if session is None:
+        print '>  [error] no default database has been specified'
+        return 0
+
+    mapping = {}
+    timeseries = {}
+    tname = target_model.get_name()
+    for id,link_inst in links.iteritems():
+        f,t = link_inst.get_link()
+        if t[0].get_name() == tname:
+            mapping[f[1].name()] = t[1].name()
+            print '>  %s -> %s'%(f[1].name(), t[1].name())
+
+        # get data and store in dict
+    return timeseries
+
+def save_model_results():
+    pass
 
 def unresolved_exchange_items():
     # make sure that all input items are satisfied
     # warn the user if output items are not being used or saved in database
+    pass
+
+def get_start_end(model_instance):
+    """
+    calculates the global start and end time for a model simulation
+    :param model_instance: the class instance of the desired model
+    :return: global start and end time for all exchange items
+    """
     pass
 
 
